@@ -8,13 +8,22 @@ public class PlayerController : MonoBehaviour
 	public float speed;
     public float tilt;
 
+	MousePositionInput mouseInput;
+	public AxisInput mainJoystickInput;
+
+	PlayerController()
+	{
+		mouseInput = new MousePositionInput();
+		mainJoystickInput = new AxisInput("Vertical", "Horizontal");
+	}
+	
 	void FixedUpdate()
 	{
 		Vector2 direction;
 		if (ShouldUseMouseInput())
-			direction = GetMouseDirection();
+			direction = mouseInput.GetMouseDirectionRelativeFrom(this.transform.position);
 		else
-			direction = GetLeftJoystickInput();
+			direction = mainJoystickInput.GetInput();
 
 
 		Rigidbody2D rigidbody = this.GetComponent<Rigidbody2D>();
@@ -32,64 +41,20 @@ public class PlayerController : MonoBehaviour
 	}
 
 	bool useMouseInput = true;
-	Vector3 oldMousePos = Vector3.zero;
 	bool ShouldUseMouseInput()
 	{
 		if (!useMouseInput) {
-			Vector3 mousePos = GetMousePosOn2DPlane();
-			if (mousePos != oldMousePos)
+			if (mouseInput.IsActive())
 			{
 				useMouseInput = true;
 			}
 		} else {
-			if (GetLeftJoystickInput(false /* buffered */).SqrMagnitude() > 0)
+			if (mainJoystickInput.HasInput())
 			{
-				oldMousePos = GetMousePosOn2DPlane();
 				useMouseInput = false;
 			}
 		}
 		return useMouseInput;
-	}
-
-	Vector2 bufferedJoystickInput = new Vector2(0, 0);
-	Vector2 GetLeftJoystickInput(bool buffered = true)
-	{
-		float xDir = Input.GetAxis("Horizontal");
-        float yDir = Input.GetAxis("Vertical");
-
-		if (xDir == 0 && yDir == 0)
-		{
-			if (buffered)
-				return bufferedJoystickInput;
-			else
-				return Vector2.zero;
-		}
-		
-		bufferedJoystickInput.x = xDir;
-		bufferedJoystickInput.y = yDir;
-
-		return bufferedJoystickInput;
-	}
-
-
-	Vector3 GetMousePosOn2DPlane()
-	{
-		Vector3 mousePos2D = Input.mousePosition;
-		mousePos2D.z = -Camera.main.transform.position.z;
-		return Camera.main.ScreenToWorldPoint(mousePos2D);
-	}
-
-	Vector3 GetMouseDirection()
-	{
-		Vector3 mousePos3D = GetMousePosOn2DPlane();
-
-		Vector3 directionToMouse = mousePos3D - this.transform.position;
-		directionToMouse.z = 0;
-
-		float sqrMagnitude = directionToMouse.sqrMagnitude;
-
-		directionToMouse.Normalize();
-		return directionToMouse;
 	}
 
 	float GetRotationFrom(Vector2 lookDir)
