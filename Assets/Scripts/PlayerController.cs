@@ -5,39 +5,48 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
-	public float speed;
-    public float tilt;
+	public float engineForce;
+	public float maxVelocityWithoutBoost;
+	public float PercentOfMaxVelocityToQuicklyAcccelerateToo;
+	public float PercentEngineForceToUseOnBoost;
 
 	MousePositionInput mouseInput;
 	public AxisInput mainJoystickInput;
+	public AxisInput secondaryJoystickInput;
 
 	PlayerController()
 	{
 		mouseInput = new MousePositionInput();
-		mainJoystickInput = new AxisInput("Vertical", "Horizontal");
+		mainJoystickInput = new AxisInput("MainVertical", "MainHorizontal");
+		secondaryJoystickInput = new AxisInput("SecondaryVertical", "SecondaryHorizontal");
 	}
 	
 	void FixedUpdate()
 	{
-		Vector2 direction;
+		Vector2 directionToFace;
 		if (ShouldUseMouseInput())
-			direction = mouseInput.GetMouseDirectionRelativeFrom(this.transform.position);
+			directionToFace = mouseInput.GetMouseDirectionRelativeFrom(this.transform.position);
 		else
-			direction = mainJoystickInput.GetInput();
+			directionToFace = mainJoystickInput.GetInput();
 
+		Vector2 moveDirection = secondaryJoystickInput.GetInput(false /*buffered*/);
 
 		Rigidbody2D rigidbody = this.GetComponent<Rigidbody2D>();
-		rigidbody.MoveRotation(GetRotationFrom(direction));
-
+		rigidbody.MoveRotation(GetRotationFrom(directionToFace));
 		
-		// float moveHorizontal = mouseDirection.x;
-        // float moveVertical = mouseDirection.y;
+		float currentEngineForce = this.engineForce;
+		float quickAccelVelocity = PercentOfMaxVelocityToQuicklyAcccelerateToo * maxVelocityWithoutBoost;
+		if (rigidbody.velocity.SqrMagnitude() < quickAccelVelocity * quickAccelVelocity)
+		{
+			currentEngineForce *= PercentEngineForceToUseOnBoost;
+		}
 
-        // Vector3 movement = new Vector3 (moveHorizontal, moveVertical, 0.0f);
-		// Rigidbody2D rigidbody = this.GetComponent<Rigidbody2D>();
-        // rigidbody.velocity = movement * speed;
+		rigidbody.AddForce(moveDirection * currentEngineForce);
 
-        //rigidbody.rotation = Quaternion.Euler (0.0f, 0.0f, rigidbody.velocity.x * -tilt);
+		if (rigidbody.velocity.SqrMagnitude() > maxVelocityWithoutBoost * maxVelocityWithoutBoost)
+		{
+			rigidbody.velocity = rigidbody.velocity.normalized * maxVelocityWithoutBoost;
+		}
 	}
 
 	bool useMouseInput = true;
