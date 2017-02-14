@@ -5,10 +5,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
-	public float engineForce;
+	public float maxAccelWithoutBoost;
 	public float maxVelocityWithoutBoost;
 	public float PercentOfMaxVelocityToQuicklyAcccelerateToo;
-	public float PercentEngineForceToUseOnBoost;
+	public float PercentOfAccelToUseOnBoost;
 
 	MousePositionInput mouseInput;
 	public AxisInput mainJoystickInput;
@@ -34,14 +34,14 @@ public class PlayerController : MonoBehaviour
 		Rigidbody2D rigidbody = this.GetComponent<Rigidbody2D>();
 		rigidbody.MoveRotation(GetRotationFrom(directionToFace));
 		
-		float currentEngineForce = this.engineForce;
-		float quickAccelVelocity = PercentOfMaxVelocityToQuicklyAcccelerateToo * maxVelocityWithoutBoost;
+		float currentAccel = this.maxAccelWithoutBoost;
+		float quickAccelVelocity = PercentOfMaxVelocityToQuicklyAcccelerateToo * .01f * maxVelocityWithoutBoost;
 		if (rigidbody.velocity.SqrMagnitude() < quickAccelVelocity * quickAccelVelocity)
 		{
-			currentEngineForce *= PercentEngineForceToUseOnBoost;
+			currentAccel *= PercentOfAccelToUseOnBoost * .01f;
 		}
 
-		rigidbody.AddForce(moveDirection * currentEngineForce);
+		rigidbody.AddForce(moveDirection * currentAccel * rigidbody.mass);
 
 		if (rigidbody.velocity.SqrMagnitude() > maxVelocityWithoutBoost * maxVelocityWithoutBoost)
 		{
