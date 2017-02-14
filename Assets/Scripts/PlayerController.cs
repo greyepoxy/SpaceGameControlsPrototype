@@ -5,6 +5,8 @@ public class PlayerController : MonoBehaviour
 
 	public float maxAccelWithoutBoost;
 	public float maxVelocityWithoutBoost;
+	public float AngleToApplyBoostAt;
+	public float PercentAccelToUseOnBoost;
 
 	MousePositionInput mouseInput;
 	public AxisInput mainJoystickInput;
@@ -30,7 +32,13 @@ public class PlayerController : MonoBehaviour
 		Rigidbody2D rigidbody = this.GetComponent<Rigidbody2D>();
 		rigidbody.MoveRotation(GetRotationFrom(directionToFace));
 
-		rigidbody.AddForce(moveDirection * this.maxAccelWithoutBoost * rigidbody.mass);
+		float currentAccel = maxAccelWithoutBoost;
+		if (Vector2.Angle(rigidbody.velocity, moveDirection) > AngleToApplyBoostAt)
+		{
+			currentAccel *= PercentAccelToUseOnBoost * 0.01f;
+		}
+
+		rigidbody.AddForce(moveDirection * currentAccel * rigidbody.mass);
 
 		if (rigidbody.velocity.SqrMagnitude() > maxVelocityWithoutBoost * maxVelocityWithoutBoost)
 		{

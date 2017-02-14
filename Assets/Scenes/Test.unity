@@ -383,10 +383,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0528c28442ff084f8297fb53d6a6019, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAccelWithoutBoost: 2
+  maxAccelWithoutBoost: 8
   maxVelocityWithoutBoost: 5
-  PercentOfMaxVelocityToQuicklyAcccelerateToo: 20
-  PercentOfAccelToUseOnBoost: 150
+  AngleToApplyBoostAt: 160
+  PercentAccelToUseOnBoost: 200
   mainJoystickInput:
     verticalAxis: MainVertical
     horizontalAxis: MainHorizontal
